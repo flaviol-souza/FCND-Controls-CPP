@@ -186,14 +186,17 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
 
   Mat3x3F R = attitude.RotationMatrix_IwrtB();
   float thrust = 0;
-
+  float CONST_GRAVITY = 9.81f;
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
-
-
+  float p = kpPosZ * (posZCmd - posZ);  
+  integratedAltitudeError += dt * p;
+  float i = KiPosZ * integratedAltitudeError;
+  float d = kpVelZ * (velZCmd - velZ) + velZ;
+  float u_bar = p + i + d + accelZCmd - CONST_GRAVITY;
+  thrust = u_bar / R(2, 2) * mass;
   /////////////////////////////// END STUDENT CODE ////////////////////////////
   
-  return thrust;
+  return thrust * -1;
 }
 
 // returns a desired acceleration in global frame
@@ -226,9 +229,15 @@ V3F QuadControl::LateralPositionControl(V3F posCmd, V3F velCmd, V3F pos, V3F vel
   V3F accelCmd = accelCmdFF;
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
+  velCmd += kpPosXY * (posCmd - pos);
+  if (velCmd.mag() > maxSpeedXY) {
+	  velCmd = velCmd.norm() * maxSpeedXY;
+  }
 
-  
-
+  accelCmd += kpVelXY * (velCmd - vel);
+  if (accelCmd.mag() > maxAccelXY) {
+	  accelCmd = accelCmd.norm() * maxAccelXY;
+  }
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   return accelCmd;
@@ -249,8 +258,14 @@ float QuadControl::YawControl(float yawCmd, float yaw)
 
   float yawRateCmd=0;
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
-
+  float err = yawCmd - yaw;
+  err = fmodf(err, F_PI * 2.f);
+  if (err > F_PI) {
+	  err -= F_PI * 2.f;
+  } else if (err < -F_PI) {
+	  err += F_PI * 2.f;
+  }
+  yawRateCmd = kpYaw * err;
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   return yawRateCmd;
