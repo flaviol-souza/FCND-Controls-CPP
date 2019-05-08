@@ -69,7 +69,6 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
 	// You'll need the arm length parameter L, and the drag/thrust ratio kappa
 
 	////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
 	float l = L / sqrtf(2.f);
 	V3F differential_thrusts;
 	differential_thrusts.x = momentCmd.x / l;
@@ -80,8 +79,7 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
 	cmd.desiredThrustsN[1] = (collThrustCmd - differential_thrusts.x + differential_thrusts.y - differential_thrusts.z) / 4.f; // front right
 	cmd.desiredThrustsN[2] = (collThrustCmd + differential_thrusts.x - differential_thrusts.y - differential_thrusts.z) / 4.f; // rear left
 	cmd.desiredThrustsN[3] = (collThrustCmd - differential_thrusts.x - differential_thrusts.y + differential_thrusts.z) / 4.f; // rear right
-
-																															   /////////////////////////////// END STUDENT CODE ////////////////////////////  
+	/////////////////////////////// END STUDENT CODE ////////////////////////////  
 
 	return cmd;
 }
@@ -151,7 +149,6 @@ V3F QuadControl::RollPitchControl(V3F accelCmd, Quaternion<float> attitude, floa
 		pqrCmd.x = (R(1, 0) * b_x_p_term - R(0, 0) * b_y_p_term) / R(2, 2);
 		pqrCmd.y = (R(1, 1) * b_x_p_term - R(0, 1) * b_y_p_term) / R(2, 2);
 	}
-
 	/////////////////////////////// END STUDENT CODE ////////////////////////////
 
 	return pqrCmd;
