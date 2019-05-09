@@ -28,23 +28,28 @@ You're reading it! Below I describe how I addressed each rubric point and where 
 The goals this method is provided and keep the stabilize of the quad when there is rotation. So it, the controller should be a proportional controller to the inertia of the quad. The GenerateMotorCommands method provides the thrust based on the total thrust and the moment.
 For this, it's necessary to calculate the rotor-to-rotor length to get the moment by axis.
 Lastly, the total momentum must then be balanced between the axis (X, Y and Z). The equilibrium the forces are applicated to each rotor can have negative or positive values. So that, the Clockwise rotation generates a counterclockwise direction with a positive value. If it a negative value the Counter-clockwise rotation produces clockwise moment.
+In this intro step, just the mass of the quad adjust:
+```
+PASS: ABS(Quad.PosFollowErr) was less than 0.500000 for at least 0.800000 seconds
+```
 
 #### 2. BodyRateControl
-To control the Roll of the quad is necessary to consider the non-linear transformation from local accelerations to body rates. In this way, this method provides acceleration and thrust commands applying a P controller and the moments of inertia.
-Then the pqr_error values are obtained by desired body rates and estimated body rates. In way, it possible calculate the desired moment for each of the 3-axis and return that.
+To control the Roll of the quad is necessary to consider the non-linear transformation from local accelerations to body rates. In this way, this method provides acceleration and thrust commands applying a P controller and the moments of inertia. In this way, the kpPQR parameter should be adjusted to be the quad isn't from flipping.
+Then the pqr_error values are obtained by desired body rates and estimated body rates. In a way, it possible calculate the desired moment for each of the 3-axis and return that.
 
 #### 3. RollPitchControl
-It fundamental that the quad has the control itself in the down position and down velocity. This method has this propose providing the desired acceleration (in global coordinates and the estimated attitude). For that, it needs to calculate desired quad thrust based on altitude setpoint. It's applying the P controller on R13 and R23 elements of rotation.
+It fundamental that the quad has the control itself in the down position and down velocity. This method has this propose the desired acceleration (in global coordinates and the estimated attitude). For that, it needs to calculate desired quad thrust based on altitude setpoint. It's applying the P controller on R13 and R23 elements of rotation. To that is a need to find an equilibrium the kpBank and kpPQR until that the quad gains stable.
+The implementation can be checked in lines [135 to 151](https://github.com/flaviol-souza/FCND-Controls-CPP/blob/master/src/QuadControl.cpp)
 
 #### 4. LateralPositionControl
-In this method calculated the horizontal acceleration with based desired lateral position/velocity/acceleration and current pose, using a PID controller to X and Y acceleration.
+In this method calculated the horizontal acceleration with based desired lateral position/velocity/acceleration and current pose, using a PID controller to X and Y acceleration by changing the body orientation (non-zero thrust) to hope direction. This function is implemented on the `LateralPositionControl` method in lines [227 to 236](https://github.com/flaviol-souza/FCND-Controls-CPP/blob/master/src/QuadControl.cpp) on `QuadControl.cpp`.
 
 #### 5. YawControl
-This method is more easy to implement because use the P Controller to the yaw control providing the current and commanded yaws. To control the yaw a  linear/proportional controller is used in this method.
+This method is more easy to implement because use the P Controller to the yaw control providing the current and commanded yaws. To control the yaw a  linear/proportional controller is used on YawControl in lines [257 to 270](https://github.com/flaviol-souza/FCND-Controls-CPP/blob/master/src/QuadControl.cpp) of the `QuadControl.cpp` file.
 
 #### 6. AltitudeControl
-The thrust and moments should be converted to the appropriate 4 different desired thrust forces for the moments. The PD controller provides desired and current vertical positions in NED coordinates. After calculated the collective thrust command return it.
-
+The thrust and moments should be converted to the appropriate 4 different desired thrust forces for the moments that also includes the non-linear effects on Roll and Pitch. The PD controller provides a resource to desired and current vertical positions in NED coordinates. After calculated the collective thrust command return it.
+To scenario 4 is needs includes an integrator (i) to compensate for the shift of weight presented in one of the quads. This implementation can be see on lines [181 to 191](https://github.com/flaviol-souza/FCND-Controls-CPP/blob/master/src/QuadControl.cpp) of the `QuadControl.cpp` file
 
 ### Flight Evaluation
 #### 1. Your C++ controller is successfully able to fly the provided test trajectory and visually passes inspection of the scenarios leading up to the test trajectory.
